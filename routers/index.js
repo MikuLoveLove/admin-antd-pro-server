@@ -54,6 +54,7 @@ router.get('/api/getAllRole', (req, res) => {
 
 // 获取用户列表
 router.get('/api/getUserList', (req, res) => {
+  console.log(req.query)
   UserModel.find({}, filter).then(userList => {
     res.send(resFunc(userList))
   })
