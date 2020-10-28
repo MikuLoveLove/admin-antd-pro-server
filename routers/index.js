@@ -3,7 +3,9 @@ const express = require('express')
 
 const UserModel = require('../models/users')
 const roleModel = require('../models/roles')
-const {resFunc, setUser, commonData} = require('./common')
+const {setUser, commonData} = require('./common')
+const {paginationFunc} = require('../utils/pagination')
+const {commonCallBack, resFunc} = require('../utils/utils')
 const router = express.Router()
 
 // 过滤器
@@ -38,10 +40,9 @@ router.get('/api/getUserInfo', (req, res) => {
 
 // 获取角色列表
 router.get('/api/getRoleList', (req, res) => {
-  roleModel.find({}, filter).then(roleList => {
-    res.send(resFunc(roleList))
+  paginationFunc(roleModel, req.query, filter, (data, err) => {
+    res.send(resFunc(data, err, 200, !err))
   })
-  // res.send(resFunc(commonData.user))
 })
 
 // 获取所有角色
@@ -49,20 +50,61 @@ router.get('/api/getAllRole', (req, res) => {
   roleModel.find({}, filter).then(roleList => {
     res.send(resFunc(roleList))
   })
-  // res.send(resFunc(commonData.user))
 })
 
 // 获取用户列表
 router.get('/api/getUserList', (req, res) => {
-  console.log(req.query)
-  UserModel.find({}, filter).then(userList => {
-    res.send(resFunc(userList))
+  paginationFunc(UserModel, req.query, filter, (data, err) => {
+    res.send(resFunc(data, err, 200, !err))
   })
-  // res.send(resFunc(commonData.user))
 })
-// router.use((req, res) => {
-//   res.redirect('/');
-// })
+
+// 新增用户
+router.post('/api/addUser', (req, res) => {
+  console.log(req.body)
+  const {account, roles, username, info} = req.body
+  UserModel.find({account}).then(users => {
+    if (users.length) {
+      res.send(resFunc(null, '已存在相同账户！', 200, false))
+    } else {
+      UserModel.find({}).sort({'userId': -1}).limit(1).then(userList => {
+        console.log(userList)
+        const newUser = new UserModel({
+          account,
+          password: 123, 
+          roles, 
+          name: username,
+          info: info || '',
+          userId: userList[0].userId + 1
+        })
+        newUser.save(commonCallBack({success: '添加成功', error: '添加失败', res}))
+      }).catch(err => {
+        res.send(resFunc(err, '添加失败！', 200, false))
+      })
+    }
+  
+  })
+
+  // })
+})
+
+// 更新用户
+router.post('/api/updateUser', (req, res) => {
+  const {userId, info, username, roles} = req.body
+  UserModel.findOneAndUpdate({userId}, { info, name: username, roles}, {new: true, useFindAndModify: false}, (err) => {
+    if (!err) res.send(resFunc(err, '修改成功', 200, !err))
+    else res.send(resFunc(err, '修改失败', 200, !err))
+  })
+})
+
+// 删除用户
+router.get('/api/deleteUser/:id', (req, res) => {
+  const {id} = req.params
+  UserModel.findOneAndDelete({userId: id}, (err) => {
+    if (!err) res.send(resFunc(null, '删除成功', 200, !err))
+    else res.send(resFunc(err, '删除失败', 200, !err))
+  })
+})
 
 
 module.exports = router
