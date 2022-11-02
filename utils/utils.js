@@ -11,7 +11,7 @@ const commonCallBack = (options) => {
             message = resFunc(err, error, null, !err)
         } 
         debugger
-        console.log('666', message, err)
+        // console.log('666', message, err)
         res.send(message)
     }
 }

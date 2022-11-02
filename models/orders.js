@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose')
 
-const userSchema = new mongoose.Schema({
+const orderSchema = new mongoose.Schema({
   account: {
     type: String,
     unique: true,
@@ -22,4 +22,4 @@ const userSchema = new mongoose.Schema({
   }],
   info: String
 })
-module.exports = mongoose.model('users', userSchema)
+module.exports = mongoose.model('orders', orderSchema)

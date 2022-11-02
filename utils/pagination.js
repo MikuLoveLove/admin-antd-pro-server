@@ -1,7 +1,9 @@
 
+
 const paginationFunc = (Model, query, filter, cb) => {
     const {pageSize, current} = query
     Model.find({}, filter).then(dataList => {
+        dataList = dataList || []
         const total =  dataList.length
         let data = { list: [], pageSize: Number(pageSize), current: Number(current), total}
         if (total < pageSize) cb( {...data, current: 1, list: dataList})
